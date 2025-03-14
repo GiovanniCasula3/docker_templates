@@ -1,0 +1,15 @@
+# User and group IDs
+UID=1000
+GID=1000
+
+# Username to be created inside the container
+USER=alex
+
+# Container name for JupyterLab
+JUPYTERLAB_CONTAINER_NAME=mlwml_jupyter
+
+# Authentication token for JupyterLab (change 'changeme' to your secure token)
+JUPYTER_PASSWORD=changeme
+
+# Host port mapping for JupyterLab
+JUPYTERLAB_PORT=8888
