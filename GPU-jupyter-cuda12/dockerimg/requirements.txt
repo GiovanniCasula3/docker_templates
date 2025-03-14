@@ -1,0 +1,24 @@
+pandas
+seaborn
+scikit-learn
+python-dotenv
+
+
+tensorboardX
+pytorch_lightning
+torchmetrics
+
+optuna
+
+pymongo
+py2neo
+
+bertopic [spacy, vision]
+hdbscan
+
+transformers
+numpy
+
+nltk
+matplotlib
+seaborn
