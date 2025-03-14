@@ -1,0 +1,10 @@
+Para no olvidarme en el futuro:
+	- Dockerfile2 es el primero que he probado, funciona bien
+	- en Dockerfile2_con_torch he añadido pytorch compatible con cuda 11.8
+		- por algún motivo funciona, no me quejo
+	- el otro Dockerfile tenía algo distinto pero ya se me ha olvidado in-
+	 cluso al escribir esto XD
+
+Cosas pendientes:
+	- script setup.sh que pida toda la info de puertos etc y lance solo
+	  el docker compose up -d
