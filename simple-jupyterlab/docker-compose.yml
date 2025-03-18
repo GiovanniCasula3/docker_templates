@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  jupyter:
+      env_file:
+      - .env
+      build: 
+        context: ./docker
+        dockerfile: ./Dockerfile
+        args:
+          UID: ${UID}
+          GID: ${GID}
+          USER: ${USER}
+      deploy:
+        resources:
+          reservations:
+            devices:
+              - driver: nvidia
+                capabilities: [gpu]
+      container_name: ${JUPYTERLAB_CONTAINER_NAME}
+      environment: 
+        JUPYTER_ENABLE_LAB: "yes"
+        JUPYTER_TOKEN: ${JUPYTER_PASSWORD}
+        JUPYTER_PORT: ${JUPYTER_PORT}
+        JUPYTER_PASSWORD: ${JUPYTER_PASSWORD}
+        NB_UID: ${UID}
+        NB_GID: ${GID}
+      ports:
+        - "${JUPYTER_PORT}:8888"
+      volumes:
+        - /mnt/disk2/data:/work
+      user: "${UID}:${GID}"
+      restart: unless-stopped
