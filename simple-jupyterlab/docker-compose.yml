@@ -5,7 +5,7 @@ services:
       env_file:
       - .env
       build: 
-        context: ./docker
+        context: ./image
         dockerfile: ./Dockerfile
         args:
           UID: ${UID}
@@ -27,7 +27,5 @@ services:
         NB_GID: ${GID}
       ports:
         - "${JUPYTER_PORT}:8888"
-      volumes:
-        - /mnt/disk2/data:/work
       user: "${UID}:${GID}"
       restart: unless-stopped
