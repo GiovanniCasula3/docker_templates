@@ -23,11 +23,6 @@ FROM python:3.11-slim
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# install java
-RUN apt-get update && apt-get install -y openjdk-11-jdk
-# update java path
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-ENV PATH=$JAVA_HOME/bin:$PATH
 
 
 # Upgrade pip and install Python packages including JupyterLab and typical packages
