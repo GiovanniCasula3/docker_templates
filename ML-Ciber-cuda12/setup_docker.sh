@@ -32,8 +32,7 @@ echo -e "${YELLOW}This script will help you set up a secure JupyterLab${NC}"
 echo -e "${YELLOW}environment in a Docker container.${NC}"
 echo -e "${CYAN}======================================================${NC}"
 
-# Ensure the directory structure
-mkdir -p image
+
 mkdir -p workspace
 
 
