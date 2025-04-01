@@ -1,31 +1,24 @@
 version: "3.8"
 
 services:
-  jupyter:
-      env_file:
-      - .env
-      build: 
-        context: ./image
-        dockerfile: ./Dockerfile
-        args:
-          UID: ${UID}
-          GID: ${GID}
-          USER: ${USER}
-      deploy:
-        resources:
-          reservations:
-            devices:
-              - driver: nvidia
-                capabilities: [gpu]
-      container_name: ${JUPYTERLAB_CONTAINER_NAME}
-      environment: 
-        JUPYTER_ENABLE_LAB: "yes"
-        JUPYTER_TOKEN: ${JUPYTER_PASSWORD}
-        JUPYTER_PORT: ${JUPYTER_PORT}
-        JUPYTER_PASSWORD: ${JUPYTER_PASSWORD}
-        NB_UID: ${UID}
-        NB_GID: ${GID}
-      ports:
-        - "${JUPYTER_PORT}:8888"
-      user: "${UID}:${GID}"
-      restart: unless-stopped
+  jupyterlab:
+    build: 
+      context: ./image
+      dockerfile: ./Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+        USERNAME: ${USERNAME:-jupyter}
+    image: jupyterlab-${CONTAINER_NAME}:latest
+    container_name: ${CONTAINER_NAME:-simple-jupyterlab}
+    environment: 
+      - JUPYTER_ENABLE_LAB=yes
+      - NB_UID=${UID:-1000}
+      - NB_GID=${GID:-1000}
+      - JUPYTER_TOKEN=${JUPYTER_PASSWORD:-password}
+    ports:
+      - "${JUPYTER_PORT:-8888}:8888"
+    volumes:
+      - ./workspace:/home/${USERNAME:-jupyter}/workspace
+    user: "${UID:-1000}:${GID:-1000}"
+    restart: unless-stopped

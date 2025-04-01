@@ -1,7 +1,12 @@
 FROM python:3.11-slim
 
-# Install common Unix CLI tools
-    RUN apt-get update && \
+# Set arguments for user creation
+ARG USERNAME=jupyter
+ARG UID=1000
+ARG GID=1000
+
+# Install essential packages
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     wget \
     curl \
@@ -9,52 +14,41 @@ FROM python:3.11-slim
     sudo \
     tini \
     vim \
-    btop \
     build-essential \
-    cmake \
-    libssl-dev \
-    libffi-dev \
-    libxml2-dev \
-    libxslt1-dev \
-    zlib1g-dev \
-    unzip \
-    nodejs \
-    psmisc && \
+    ca-certificates && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Create user with specified UID and GID
+RUN groupadd -g $GID $USERNAME && \
+    useradd -m -u $UID -g $GID -s /bin/bash $USERNAME && \
+    echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME && \
+    chmod 0440 /etc/sudoers.d/$USERNAME
 
+# Install Python packages
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+    jupyterlab \
+    numpy \
+    pandas \
+    matplotlib \
+    scikit-learn \
+    seaborn \
+    ipywidgets
 
-# Upgrade pip and install Python packages including JupyterLab and typical packages
-RUN pip install --upgrade pip && \
-    pip install \
-      jupyterlab \
-      numpy \
-      pandas \
-      matplotlib \
-      scikit-learn \
-      seaborn
-
-# Create a non-root user to run the container securely
-RUN useradd -ms /bin/bash jupyter && \
-    mkdir -p /home/jupyter/work && \
-    chown -R jupyter:jupyter /home/jupyter/work
-
-WORKDIR /home/jupyter/work
-
-
-RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.3/zsh-in-docker.sh)"
-RUN sed -i '/^ZSH_THEME/c\ZSH_THEME="agnoster"' ~/.zshrc
-RUN ln -sf /bin/bash /bin/sh
+# Create and set permissions for workspace directory
+RUN mkdir -p /home/$USERNAME/workspace && \
+    chown -R $USERNAME:$USERNAME /home/$USERNAME
 
 # Switch to the non-root user
-USER jupyter
-RUN sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || true
+USER $USERNAME
+WORKDIR /home/$USERNAME/workspace
 
-# Expose port 8892 for JupyterLab
-EXPOSE 8892
+# Expose port for JupyterLab
+EXPOSE 8888
 
-# use tini as the entrypoint
+# Use tini as entrypoint for proper signal handling
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-CMD ["bash", "-c", "source ~/.bashrc && jupyter lab --ip 0.0.0.0 --port=8892 --no-browser --allow-root --ContentsManager.allow_hidden=True  --ServerApp.terminals_enabled=True"]
+# Start JupyterLab
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--ServerApp.terminals_enabled=True", "--ContentsManager.allow_hidden=True"]

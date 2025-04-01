@@ -1,11 +1,12 @@
-COMPOSE_PROJECT_NAME=matm
+# User configuration
+UID=1000
+GID=1000
+USERNAME=jupyter
 
+# JupyterLab configuration
+CONTAINER_NAME=simple-jupyterlab
+JUPYTER_PORT=8888
+JUPYTER_PASSWORD=password
 
-JUPYTER_PASSWORD=password-super-secure1312
-JUPYTERLAB_CONTAINER_NAME=small-container
-JUPYTER_PORT=8892
-
-UID=1012
-GID=1012
-USER=matm
-GROUP=matm
+# Docker service configuration
+RESTART_POLICY=unless-stopped
