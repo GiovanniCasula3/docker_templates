@@ -1,3 +1,75 @@
+#!/bin/bash
+
+# Function to generate the .env file
+generate_env_file() {
+    cat > .env << EOF
+# Project configuration
+COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME
+
+# User configuration
+UID=$CONTAINER_UID
+GID=$CONTAINER_GID
+USERNAME=$USERNAME
+
+# JupyterLab configuration
+CONTAINER_NAME=$CONTAINER_NAME
+JUPYTERLAB_PORT=$JUPYTERLAB_PORT
+JUPYTER_PASSWORD=$JUPYTER_PASSWORD
+EOF
+    
+    echo -e "${GREEN}.env file created successfully${NC}"
+}
+
+# Function to generate the docker-compose.yml file
+generate_docker_compose() {
+    # Construct volumes section for docker-compose.yml
+    VOLUMES_CONFIG=""
+    for VOLUME in "${VOLUMES[@]}"; do
+        VOLUMES_CONFIG+="            - ${VOLUME}\n"
+    done
+    VOLUMES_CONFIG=${VOLUMES_CONFIG%\\n}
+    
+    cat > docker-compose.yml << EOF
+version: '3'
+services:
+    jupyterlab:
+        env_file:
+            - .env
+        build: 
+            context: ./image
+            dockerfile: ./Dockerfile
+            args:
+                UID: \${UID}
+                GID: \${GID}
+                USERNAME: \${USERNAME}
+                JUPYTERLAB_PORT: \${JUPYTERLAB_PORT}
+        image: jupyterlab-\${CONTAINER_NAME}:latest
+        container_name: \${CONTAINER_NAME}
+        environment: 
+            - JUPYTER_ENABLE_LAB=yes
+            - NB_UID=\${UID}
+            - NB_GID=\${GID}
+            - JUPYTER_TOKEN=\${JUPYTER_PASSWORD}
+        ports:
+            - \${JUPYTERLAB_PORT}:\${JUPYTERLAB_PORT}
+        volumes:
+$(echo -e "$VOLUMES_CONFIG")
+        user: \${UID}:\${GID}
+        restart: unless-stopped
+        networks:
+            - jupyter-network
+
+networks:
+    jupyter-network:
+        driver: bridge
+EOF
+    
+    echo -e "${GREEN}docker-compose.yml created successfully${NC}"
+}
+
+# Function to generate the Dockerfile
+generate_dockerfile() {
+    cat > ./image/Dockerfile << EOF
 FROM python:3.11-slim
 
 # Set arguments for user creation
@@ -74,3 +146,8 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 # Start JupyterLab  #  --ServerApp.terminals_enabled=True ??
 CMD ["sh", "-c", "jupyter lab  --no-browser --allow-root  --ip=0.0.0.0 --port=$JUPYTERLAB_PORT --notebook-dir=/home/$USERNAME/workspace  --ContentsManager.allow_hidden=True \\
    --NotebookApp.certfile=/home/$USERNAME/ssl/certs/jupyter.crt --NotebookApp.keyfile=/home/$USERNAME/ssl/private/jupyter.key"]
+EOF
+
+    
+    echo -e "${GREEN}Dockerfile created successfully${NC}"
+}

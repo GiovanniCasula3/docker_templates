@@ -1,24 +1,32 @@
-version: "3.8"
-
+version: '3'
 services:
-  jupyterlab:
-    build: 
-      context: ./image
-      dockerfile: ./Dockerfile
-      args:
-        UID: ${UID:-1000}
-        GID: ${GID:-1000}
-        USERNAME: ${USERNAME:-jupyter}
-    image: jupyterlab-${CONTAINER_NAME}:latest
-    container_name: ${CONTAINER_NAME:-simple-jupyterlab}
-    environment: 
-      - JUPYTER_ENABLE_LAB=yes
-      - NB_UID=${UID:-1000}
-      - NB_GID=${GID:-1000}
-      - JUPYTER_TOKEN=${JUPYTER_PASSWORD:-password}
-    ports:
-      - "${JUPYTER_PORT:-8888}:8888"
-    volumes:
-      - ./workspace:/home/${USERNAME:-jupyter}/workspace
-    user: "${UID:-1000}:${GID:-1000}"
-    restart: unless-stopped
+    jupyterlab:
+        env_file:
+            - .env
+        build: 
+            context: ./image
+            dockerfile: ./Dockerfile
+            args:
+                UID: \${UID}
+                GID: \${GID}
+                USERNAME: \${USERNAME}
+                JUPYTERLAB_PORT: \${JUPYTERLAB_PORT}
+        image: jupyterlab-\${CONTAINER_NAME}:latest
+        container_name: \${CONTAINER_NAME}
+        environment: 
+            - JUPYTER_ENABLE_LAB=yes
+            - NB_UID=\${UID}
+            - NB_GID=\${GID}
+            - JUPYTER_TOKEN=\${JUPYTER_PASSWORD}
+        ports:
+            - \${JUPYTERLAB_PORT}:\${JUPYTERLAB_PORT}
+        volumes:
+$(echo -e "$VOLUMES_CONFIG")
+        user: \${UID}:\${GID}
+        restart: unless-stopped
+        networks:
+            - jupyter-network
+
+networks:
+    jupyter-network:
+        driver: bridge

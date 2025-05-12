@@ -1,0 +1,11 @@
+# Python packages to be installed via requirements.txt
+numpy
+pandas
+matplotlib
+scikit-learn
+seaborn
+ipywidgets
+pymongo
+requests
+beautifulsoup4
+plotly
