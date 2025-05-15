@@ -36,8 +36,8 @@ services:
         env_file:
             - .env
         build: 
-            context: ./image
-            dockerfile: ./Dockerfile
+            context: .
+            dockerfile: image/Dockerfile
             args:
                 UID: \${UID}
                 GID: \${GID}
