@@ -85,14 +85,6 @@ validate_port() {
         fi
     fi
     
-    # Check if port is in use by system (Windows via PowerShell)
-    if command -v powershell.exe &> /dev/null; then
-        if powershell.exe -Command "Get-NetTCPConnection -LocalPort $port -State Listen 2>$null" | grep -q "LISTENING"; then
-            echo -e "${RED}Port $port is already in use by the system${NC}"
-            return 1
-        fi
-    fi
-    
     return 0
 }
 
