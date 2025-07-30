@@ -41,10 +41,11 @@ services:
         USERNAME: \${USERNAME}
         USER_UID: \${UID}
         USER_GID: \${GID}
+        JUPYTERLAB_PORT: \${JUPYTERLAB_PORT}
     image: cuda-jupyter-\${CONTAINER_NAME}:latest
     container_name: \${CONTAINER_NAME}
     ports:
-      - "\${JUPYTERLAB_PORT}:8977"
+      - "\${JUPYTERLAB_PORT}:\${JUPYTERLAB_PORT}"
     volumes:
 $(echo -e "$VOLUMES_CONFIG")
     environment:
@@ -74,7 +75,7 @@ EOF
 
 # Function to generate the Dockerfile
 generate_dockerfile() {
-    cat > dockerimg/Dockerfile << 'EOF'
+    cat > dockerimg/Dockerfile << EOF
 # Use NVIDIA's official PyTorch container (has all dependencies pre-configured)
 FROM nvcr.io/nvidia/pytorch:24.06-py3
 
@@ -107,6 +108,7 @@ RUN pip install flash-attn --no-build-isolation
 ARG USERNAME=jupyter
 ARG USER_UID=1000
 ARG USER_GID=1000
+ARG JUPYTERLAB_PORT=8977
 
 # Create user and group
 RUN groupadd -g $USER_GID $USERNAME || true && \
@@ -129,20 +131,20 @@ WORKDIR /home/$USERNAME/workspace
 
 # Set up JupyterLab configuration with Python file support
 RUN jupyter lab --generate-config && \
-    echo "c.ServerApp.allow_origin = '*'" >> /home/$USERNAME/.jupyter/jupyter_lab_config.py && \
-    echo "c.ServerApp.allow_root = True" >> /home/$USERNAME/.jupyter/jupyter_lab_config.py && \
-    echo "c.ServerApp.ip = '0.0.0.0'" >> /home/$USERNAME/.jupyter/jupyter_lab_config.py && \
-    echo "c.ServerApp.open_browser = False" >> /home/$USERNAME/.jupyter/jupyter_lab_config.py && \
-    echo "c.ServerApp.port = 8977" >> /home/$USERNAME/.jupyter/jupyter_lab_config.py
+    echo "c.ServerApp.allow_origin = '*'" >> /home/\$USERNAME/.jupyter/jupyter_lab_config.py && \
+    echo "c.ServerApp.allow_root = True" >> /home/\$USERNAME/.jupyter/jupyter_lab_config.py && \
+    echo "c.ServerApp.ip = '0.0.0.0'" >> /home/\$USERNAME/.jupyter/jupyter_lab_config.py && \
+    echo "c.ServerApp.open_browser = False" >> /home/\$USERNAME/.jupyter/jupyter_lab_config.py && \
+    echo "c.ServerApp.port = $JUPYTERLAB_PORT" >> /home/\$USERNAME/.jupyter/jupyter_lab_config.py
 
 # Expose port
-EXPOSE 8977
+EXPOSE $JUPYTERLAB_PORT
 
 # Use tini as entrypoint
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Start JupyterLab with enhanced configuration
-CMD ["sh", "-c", "jupyter lab --ip=0.0.0.0 --port=8977 --no-browser --notebook-dir=/home/$USERNAME/workspace --allow-root"]
+CMD ["sh", "-c", "jupyter lab --ip=0.0.0.0 --port=$JUPYTERLAB_PORT --no-browser --notebook-dir=/home/\$USERNAME/workspace --allow-root"]
 EOF
 
     echo -e "${GREEN}Dockerfile created successfully${NC}"

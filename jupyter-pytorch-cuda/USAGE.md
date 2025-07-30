@@ -5,9 +5,6 @@
 # Make script executable (Linux/macOS)
 chmod +x setup.sh
 
-# For Windows (using Git Bash or WSL)
-./make_executable.sh
-
 # Run setup
 ./setup.sh
 ```
@@ -18,7 +15,7 @@ chmod +x setup.sh
 - **Container Name**: simple-jupyter-cuda
 - **Username**: jupyter
 - **UID/GID**: 1000/1000 (standard user values)
-- **Port**: 8977
+- **Port**: 8823 (configurable)
 - **Password**: Auto-generated (secure)
 
 ### Custom Configuration
@@ -53,7 +50,7 @@ jupyter-pytorch-cuda/
 ./start.sh
 
 # Access JupyterLab
-# Open browser: http://localhost:8977 (or your chosen port)
+# Open browser: http://localhost:8823 (or your chosen port)
 # Enter the password from setup
 ```
 
@@ -125,7 +122,7 @@ sudo chown -R $(id -u):$(id -g) ./cache
 
 ### Port conflicts:
 - Choose different port during setup
-- Check: `lsof -i :8977` (Linux/macOS)
+- Check: `lsof -i :8823` (Linux/macOS) - replace 8823 with your chosen port
 
 ### Flash Attention issues:
 ```bash

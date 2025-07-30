@@ -77,8 +77,8 @@ get_security_config() {
     
     # Get JupyterLab port
     while true; do
-        read -p "Enter JupyterLab port (8000-9999, default: 8977): " JUPYTERLAB_PORT
-        JUPYTERLAB_PORT=${JUPYTERLAB_PORT:-8977}
+        read -p "Enter JupyterLab port (8000-9999, default: 8823): " JUPYTERLAB_PORT
+        JUPYTERLAB_PORT=${JUPYTERLAB_PORT:-8823}
         if validate_port "$JUPYTERLAB_PORT"; then
             break
         fi

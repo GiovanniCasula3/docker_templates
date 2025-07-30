@@ -285,7 +285,7 @@ docker compose exec cuda-jupyter nvidia-smi
 3. **Port Already in Use**
    ```bash
    # Check what's using the port
-   lsof -i :8977
+   lsof -i :8823  # replace with your chosen port
    # Or choose a different port during setup
    ```
 
