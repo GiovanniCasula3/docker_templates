@@ -55,7 +55,6 @@ get_user_config() {
     echo -e "${YELLOW}For container environments, standard UID/GID values are recommended.${NC}"
     echo -e "${YELLOW}Default: UID=$DEFAULT_UID, GID=$DEFAULT_GID (standard container values)${NC}"
     echo -e "${YELLOW}Current system: UID=$CURRENT_UID, GID=$CURRENT_GID${NC}"
-    echo -e "${YELLOW}Using non-standard values may cause permission issues with mounted volumes.${NC}"
 
     read -p "Enter UID for the container (default: $DEFAULT_UID): " CONTAINER_UID_INPUT
     CONTAINER_UID=${CONTAINER_UID_INPUT:-$DEFAULT_UID}
@@ -126,20 +125,33 @@ get_security_config() {
 
 # Function to get volume configuration
 get_volume_config() {
-    echo -e "\n${CYAN}Volume Configuration${NC}"
+    echo -e "\n${CYAN}Storage Configuration${NC}"
     echo -e "${YELLOW}======================================================${NC}"
     
-    # Default volumes for CUDA JupyterLab
-    VOLUMES=()
-    VOLUMES+=("./workspace:/home/$USERNAME/workspace")
-    VOLUMES+=("./cache:/home/$USERNAME/.cache")
+    # Allow configuration of the base containers directory
+    DEFAULT_BASE_DIR="${CONTAINER_BASE_DIR:-/mnt/diskB/containers}"
+    echo -e "${YELLOW}Configure the base directory for container data storage.${NC}"
+    echo -e "${YELLOW}This directory will store your workspace and cache files.${NC}"
+    echo -e "${YELLOW}Choose a location with sufficient space for models and datasets.${NC}"
+    echo -e "${YELLOW}Examples:${NC}"
+    echo -e "  - ${CYAN}/var/lib/containers${NC} (system default)"
+    echo -e "  - ${CYAN}/home/$(whoami)/containers${NC} (user home)"
+    echo -e "  - ${CYAN}/mnt/storage/containers${NC} (external storage)"
+    read -p "Enter base containers directory (default: ${DEFAULT_BASE_DIR}): " CONTAINERS_BASE_DIR
+    CONTAINERS_BASE_DIR=${CONTAINERS_BASE_DIR:-$DEFAULT_BASE_DIR}
     
-    echo -e "${GREEN}Default volumes configured:${NC}"
-    echo -e "  - ${CYAN}./workspace:/home/$USERNAME/workspace${NC} (JupyterLab workspace)"
-    echo -e "  - ${CYAN}./cache:/home/$USERNAME/.cache${NC} (Hugging Face cache - local control)"
+    # Define the full base path for this project
+    CONTAINER_BASE_PATH="${CONTAINERS_BASE_DIR}/$COMPOSE_PROJECT_NAME"
+     
+    echo -e "${GREEN}Container storage configuration:${NC}"
+    echo -e "  - All directories will be created inside the container"
+    echo -e "  - User will create workspace and cache from within Jupyter"
     
-    echo -e "\n${YELLOW}The cache volume allows you to control model downloads locally.${NC}"
-    echo -e "${YELLOW}Models will be stored in ./cache and persist between container restarts.${NC}"
+    echo -e "\n${YELLOW}Container storage is internal only.${NC}"
+    echo -e "${YELLOW}Data will be created and managed from within the Jupyter environment.${NC}"
+    
+    # Store the base path for use in other functions
+    export CONTAINER_BASE_PATH
     
     # Ask if user wants to add additional volumes
     read -p "Do you want to add additional volume mounts? (y/N): " add_volumes
