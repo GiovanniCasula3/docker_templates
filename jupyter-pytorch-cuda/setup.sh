@@ -1,10 +1,9 @@
 #!/bin/bash
 
 # CUDA JupyterLab Docker Setup Script - NVIDIA Container Edition
-# Created: 2025-07-30
 # Description: Main script for CUDA JupyterLab Docker environment setup
 # Uses NVIDIA's official PyTorch container with CUDA 12.2+ support
-# Fixed cache permissions for Hugging Face models
+# Configurable storage location for containers
 
 # Import helper functions
 source ./scripts/utils.sh
@@ -16,10 +15,9 @@ source ./scripts/file-generators.sh
 check_prerequisites
 show_banner
 
-# Ensure the directory structure
+# Ensure the local directory structure (for scripts and configs only)
 mkdir -p dockerimg
-mkdir -p workspace
-mkdir -p cache
+# Note: workspace or cache directories will be created from within the container
 
 # Get configuration from user
 get_project_config  
@@ -27,24 +25,29 @@ get_user_config
 get_security_config
 get_volume_config
 
+# Storage configuration
+echo -e "${YELLOW}Configuring container with persistent storage...${NC}"
+
+echo -e "${GREEN}Storage configuration completed${NC}"
+echo -e "  Location: ${CONTAINER_BASE_PATH}"
+
+# Storage directories will be created by start.sh script
+echo -e "${YELLOW}Storage directories will be created when container starts...${NC}"
+
 # Generate configuration files
 generate_env_file 
 generate_docker_compose
 generate_dockerfile
 generate_requirements
-generate_test_files
 generate_control_scripts
 
-# Set permissions
+# Set permissions for local config files
 chmod 600 .env
 chmod +x start.sh
 chmod +x stop.sh
 
-# Set cache directory permissions
-echo -e "${YELLOW}Setting cache directory permissions...${NC}"
-chown -R $CONTAINER_UID:$CONTAINER_GID ./cache 2>/dev/null || chmod -R 777 ./cache
-
 echo -e "\n${GREEN}Setup complete!${NC}"
+echo -e "${YELLOW}Container will use internal storage only${NC}"
 echo -e "${YELLOW}You can now start the container with: ${CYAN}./start.sh${NC}"
 echo -e "${YELLOW}Or use Docker Compose directly: ${CYAN}docker compose up -d${NC}"
 

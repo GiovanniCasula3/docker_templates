@@ -130,9 +130,32 @@ validate_volume_path() {
         return 1
     fi
     
-    # Create directory if it doesn't exist (for relative paths starting with ./)
+    # Warn about relative paths and suggest external storage usage
     if [[ "$host_path" =~ ^\. ]]; then
+        echo -e "${YELLOW}Warning: Relative path detected ($host_path)${NC}"
+        echo -e "${YELLOW}This will create directories in your local project folder.${NC}"
+        echo -e "${YELLOW}Consider using external storage paths like: ${CONTAINER_BASE_DIR:-/var/lib/containers/[project]}/[folder]${NC}"
+        
+        read -p "Continue with local directory creation? (y/N): " confirm_local
+        if [[ ! "$confirm_local" =~ ^[Yy]$ ]]; then
+            echo -e "${RED}Volume path rejected by user${NC}"
+            return 1
+        fi
+        
+        # Only create directory if user explicitly confirms
         mkdir -p "$host_path" 2>/dev/null
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Failed to create directory: $host_path${NC}"
+            return 1
+        fi
+    fi
+    
+    # Check if path exists or can be created
+    if [[ ! "$host_path" =~ ^\. ]]; then
+        if [ ! -d "$(dirname "$host_path")" ]; then
+            echo -e "${YELLOW}Parent directory does not exist: $(dirname "$host_path")${NC}"
+            echo -e "${YELLOW}Will be created during setup if permissions allow${NC}"
+        fi
     fi
     
     return 0

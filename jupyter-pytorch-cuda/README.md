@@ -1,6 +1,6 @@
 # CUDA JupyterLab Docker Template
 
-A comprehensive Docker template for setting up a CUDA-enabled JupyterLab environment using NVIDIA's official PyTorch container. This template provides a complete development environment for machine learning, deep learning, and AI research with GPU acceleration.
+A comprehensive Docker template for setting up a CUDA-enabled JupyterLab environment using NVIDIA's official PyTorch container. This template provides a complete development environment for machine learning, deep learning, and AI research with GPU acceleration and configurable persistent storage.
 
 ## 🚀 Features
 
@@ -8,7 +8,7 @@ A comprehensive Docker template for setting up a CUDA-enabled JupyterLab environ
 - **Latest JupyterLab 4.x** with Python file editing and execution support
 - **NVIDIA PyTorch Container** (nvcr.io/nvidia/pytorch:24.06-py3) with CUDA 12.4+ support
 - **Flash Attention** pre-installed for efficient transformer models
-- **Local Cache Control** for Hugging Face models and datasets
+- **Configurable Storage** for persistent data and model storage
 - **Comprehensive ML/DL Libraries** including PyTorch, Transformers, Datasets, and more
 
 ### Development Tools
@@ -17,10 +17,10 @@ A comprehensive Docker template for setting up a CUDA-enabled JupyterLab environ
 - **Development Utilities**: Git, htop, vim, debugging tools
 - **Python Environment**: Optimized for ML/AI development
 
-### Cache Management
-- **Local Cache Directory**: `./cache` folder for complete control over model downloads
+### Storage Management
+- **Configurable Storage**: Choose your preferred storage location during setup
 - **Persistent Storage**: Models and datasets persist between container restarts
-- **Space Management**: Easy monitoring and cleanup of cached models
+- **Flexible Configuration**: Support for various storage backends
 - **Offline Capability**: Downloaded models available without internet connection
 
 ## 📋 Prerequisites
@@ -30,7 +30,7 @@ A comprehensive Docker template for setting up a CUDA-enabled JupyterLab environ
 - NVIDIA GPU with compatible drivers (recommended: 470+)
 - NVIDIA Container Toolkit installed
 - At least 8GB GPU memory (recommended for most models)
-- 20GB+ free disk space (for base image and cache)
+- **Storage location with sufficient space** (100GB+ recommended for models)
 
 ### NVIDIA Container Toolkit Installation
 ```bash
@@ -53,7 +53,8 @@ docker run --rm --gpus all nvidia/cuda:11.8-base-ubuntu20.04 nvidia-smi
 
 ### 1. Clone or Download
 ```bash
-# If using this template
+# Clone the template to your user directory
+git clone <repository-url> jupyter-pytorch-cuda
 cd jupyter-pytorch-cuda
 ```
 
@@ -67,7 +68,7 @@ The setup script will guide you through:
 - Project and container naming
 - User configuration (default: jupyter with UID 1000, GID 1000)
 - Security settings (port and password)
-- Volume mounting configuration
+- Storage configuration (customizable location)
 
 ### 3. Start the Environment
 ```bash
@@ -83,6 +84,7 @@ Use the password you configured during setup.
 
 ## 📁 Directory Structure
 
+### Local Project Directory (System Disk)
 ```
 jupyter-pytorch-cuda/
 ├── setup.sh                 # Main setup script
@@ -93,15 +95,24 @@ jupyter-pytorch-cuda/
 ├── .env                     # Environment variables (generated)
 ├── dockerimg/
 │   └── Dockerfile          # NVIDIA PyTorch container configuration
-├── scripts/
-│   ├── utils.sh            # Utility functions and colors
-│   ├── validation.sh       # Input validation functions
-│   ├── config.sh           # Configuration gathering
-│   └── file-generators.sh  # File generation functions
-├── workspace/              # JupyterLab workspace (mounted)
+└── scripts/
+    ├── utils.sh            # Utility functions and colors
+    ├── validation.sh       # Input validation functions
+    ├── config.sh           # Configuration gathering
+    └── file-generators.sh  # File generation functions
+```
+
+### Container Data (Persistent Storage - Only Accessible via JupyterLab)
+```
+<storage-location>/<project>/
+├── workspace/              # JupyterLab workspace
 │   ├── test_cuda_setup.ipynb  # CUDA validation notebook
 │   └── test_script.py      # Python test script
-└── cache/                  # Local Hugging Face cache (mounted)
+└── cache/                  # Hugging Face and ML model cache
+    └── huggingface/
+        ├── hub/            # Model files
+        ├── datasets/       # Dataset cache
+        └── transformers/   # Tokenizer cache
 ```
 
 ## 📦 Included Packages
@@ -131,60 +142,51 @@ jupyter-pytorch-cuda/
 - **Weights & Biases** for experiment tracking
 - **TensorBoard** for visualization
 
-## 🎯 Cache Management
+## 🎯 Storage Management
 
-### Local Cache Benefits
-- **Complete Control**: Manage which models are downloaded and stored
-- **Offline Access**: Use downloaded models without internet connection
-- **Space Management**: Easy monitoring and cleanup of cache directory
-- **Reproducibility**: Consistent model versions across sessions
-- **Backup Capability**: Cache directory can be backed up or shared
+### Configurable Storage Benefits
+- **High Capacity**: Choose storage locations with sufficient space for models and datasets
+- **System Protection**: Keeps root disk free for OS operations
+- **Data Persistence**: Models and work persist between container restarts
+- **Clean Separation**: Configuration files separate from data files
+- **Easy Management**: All container data in chosen storage location
 
-### Cache Directory Structure
+### Storage Directory Structure
 ```
-cache/
-├── huggingface/
-│   ├── hub/              # Model files
-│   ├── datasets/         # Dataset cache
-│   └── transformers/     # Tokenizer cache
-└── other-ml-caches/      # Other ML library caches
+<your-chosen-path>/<your-project>/
+├── workspace/              # Your notebooks and scripts
+├── cache/                  # Automatic model downloads
+│   ├── huggingface/       # Hugging Face models
+│   └── other-ml-caches/   # Other ML library caches
 ```
 
-### Managing Cache
+### Managing Storage
 ```bash
-# View cache size
-du -sh ./cache
+# View storage usage
+du -sh <your-chosen-path>/<project>
 
-# Clean specific model cache
-rm -rf ./cache/huggingface/hub/models--<model-name>
+# View available space
+df -h <your-chosen-path>
 
-# Backup cache
-tar -czf cache-backup.tar.gz ./cache
-
-# Restore cache
-tar -xzf cache-backup.tar.gz
+# Backup project data
+tar -czf backup.tar.gz <your-chosen-path>/<project>
 ```
 
 ## 🧪 Testing Your Setup
 
 ### Automated Tests
-The template includes comprehensive tests:
+The template includes comprehensive tests accessible via JupyterLab:
 
-1. **Jupyter Notebook**: `workspace/test_cuda_setup.ipynb`
+1. **Jupyter Notebook**: `test_script.ipynb`
    - CUDA functionality verification
    - Flash Attention testing
-   - Cache configuration validation
+   - Storage configuration validation
    - Package availability check
    - GPU performance benchmarking
 
-2. **Python Script**: `workspace/test_script.py`
-   - Command-line testing
-   - Automated test suite
-   - Environment validation
-
 ### Manual Verification
 ```python
-# Test CUDA
+# Test CUDA (run in JupyterLab)
 import torch
 print(f"CUDA available: {torch.cuda.is_available()}")
 print(f"GPU count: {torch.cuda.device_count()}")
@@ -193,9 +195,10 @@ print(f"GPU count: {torch.cuda.device_count()}")
 import flash_attn
 print(f"Flash Attention: {flash_attn.__version__}")
 
-# Test cache
-from transformers import AutoTokenizer
-tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-small")
+# Test storage location
+import os
+print(f"Working directory: {os.getcwd()}")
+print(f"Home directory: {os.path.expanduser('~')}")
 ```
 
 ## 🔧 Customization
@@ -214,13 +217,6 @@ Edit `dockerimg/Dockerfile` to add:
 - Custom Python packages
 - Environment variables
 - Additional configuration
-
-### Volume Mounting
-During setup, you can add additional volumes:
-```
-./your-data:/home/jupyter/data
-./your-models:/home/jupyter/models
-```
 
 ## 📊 Performance Optimization
 
@@ -276,26 +272,35 @@ docker compose exec cuda-jupyter nvidia-smi
    sudo systemctl restart docker
    ```
 
-2. **Permission Issues with Cache**
+2. **Storage Not Available**
    ```bash
-   # Fix cache permissions
-   sudo chown -R $(id -u):$(id -g) ./cache
+   # Check if storage location is accessible
+   source .env
+   ls -la "$(dirname "$CONTAINER_BASE_PATH")"
+   # Ensure the storage location has sufficient space and permissions
    ```
 
-3. **Port Already in Use**
+3. **Permission Issues with Storage**
+   ```bash
+   # Fix permissions (run from project directory)
+   source .env
+   sudo chown -R $UID:$GID "$CONTAINER_BASE_PATH"
+   ```
+
+4. **Port Already in Use**
    ```bash
    # Check what's using the port
    lsof -i :8823  # replace with your chosen port
    # Or choose a different port during setup
    ```
 
-4. **Out of GPU Memory**
+5. **Out of GPU Memory**
    ```python
    # Clear cache and use smaller batch sizes
    torch.cuda.empty_cache()
    ```
 
-5. **Flash Attention Import Error**
+6. **Flash Attention Import Error**
    ```bash
    # Rebuild container - Flash Attention may need compilation
    docker compose up --build
@@ -313,6 +318,7 @@ docker compose exec cuda-jupyter nvidia-smi
 - JupyterLab requires password authentication
 - Only necessary ports are exposed
 - Use strong passwords (12+ characters with mixed case, numbers, symbols)
+- Data stored in persistent storage is accessible only via JupyterLab interface
 
 ## 📝 License
 
@@ -327,4 +333,4 @@ Feel free to submit issues and improvements to enhance this template for the mac
 
 ---
 
-**Note**: This template is optimized for NVIDIA GPUs and CUDA development. For CPU-only environments, consider using the standard JupyterLab template instead.
+**Note**: This template is optimized for NVIDIA GPUs and CUDA development. Container data is automatically stored in your configured storage location to preserve system disk space and provide persistent storage for ML models and datasets.
