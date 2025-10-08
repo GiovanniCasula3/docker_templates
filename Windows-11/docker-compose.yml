@@ -4,9 +4,20 @@ services:
     container_name: ${CONTAINER_NAME}
     environment:
       VERSION: "11"
+      RAM_SIZE: "16G"
+      CPU_CORES: "16"
+      AUDIO: "1"
+      DISPLAY: ${DISPLAY}
     devices:
       - /dev/kvm
       - /dev/net/tun
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     cap_add:
       - NET_ADMIN
     ports:
@@ -15,5 +26,7 @@ services:
       - ${RDP_PORT}:3389/udp
     volumes:
       - ./windows:/storage
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    stdin_open: true
+    tty: true
     restart: always
-    stop_grace_period: 2m
